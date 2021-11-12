@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,17 +6,17 @@ public class Unit : MonoBehaviour
 {
     public Vector2 position;
 
-    public enum enumeratedType
+    public enum enumType
     {
         knight, archer, healer
     }
-    public enumeratedType type;
+    public enumType type;
 
-    public enum enumeratedTeam
+    public enum enumTeam
     {
         allied, enemy
     }
-    public enumeratedTeam team;
+    public enumTeam team;
 
     public float maxHealth;
 
@@ -33,8 +32,12 @@ public class Unit : MonoBehaviour
 
     bool dead;
 
-    string status = "NONE";
-    string previousStatus = "NONE";
+    public enum enumStatus
+    {
+        NONE, WAITING, READY, MOVING, ATTACKING
+    }
+    enumStatus status = enumStatus.NONE;
+    enumStatus previousStatus = enumStatus.NONE;
 
     Animator animator;
 
@@ -77,13 +80,8 @@ public class Unit : MonoBehaviour
     }
 
     void Update()
-    {
-        if (!gameObject.activeSelf)
-        {
-            return;
-        }
-        
-        if (status == "MOVING")
+    {        
+        if (status == enumStatus.MOVING)
         {
             animator.SetBool("Moving", true);
         }
@@ -105,7 +103,7 @@ public class Unit : MonoBehaviour
 
         if (!board.GetRoundStarted())
         {
-            if (highlighted && Input.GetMouseButtonDown(0) && team.ToString() == "allied")
+            if (highlighted && Input.GetMouseButtonDown(0) && team == enumTeam.allied)
             {
                 dragging = true;
 
@@ -141,11 +139,11 @@ public class Unit : MonoBehaviour
             return;
         }
         
-        if (status == "MOVING")
+        if (status == enumStatus.MOVING)
         {
             transform.Translate(new Vector3(0, 0, moveSpeed * Time.deltaTime));
 
-            if (team.ToString() == "allied")
+            if (team == enumTeam.allied)
             {
                 if (transform.localPosition.z > position.y)
                 {
@@ -160,7 +158,7 @@ public class Unit : MonoBehaviour
                 }
             }
         }
-        else if (status == "ATTACKING")
+        else if (status == enumStatus.ATTACKING)
         {
             if (attackSpeedCounter >= attackSpeed)
             {
@@ -186,7 +184,7 @@ public class Unit : MonoBehaviour
             {
                 attackingUnit = null;
 
-                status = "NONE";
+                status = enumStatus.NONE;
             }
         }
         else
@@ -206,14 +204,14 @@ public class Unit : MonoBehaviour
     {        
         transform.localPosition = new Vector3(position.x, transform.localPosition.y, position.y);
 
-        status = "READY";
+        status = enumStatus.READY;
     }
 
     void SetStatus()
     {
         tilesToCheck = new List<Vector2>();
 
-        if (team.ToString() == "allied")
+        if (team == enumTeam.allied)
         {
             if (position.y == 7f)
             {
@@ -247,15 +245,15 @@ public class Unit : MonoBehaviour
         {                        
             if (!board.GetTileAvailability(tilesToCheck[i]))
             {
-                if ((type.ToString() == "healer" && !board.CheckEnemyUnit(tilesToCheck[i], GetComponent<Unit>())) || board.CheckEnemyUnit(tilesToCheck[i], GetComponent<Unit>()))
+                if ((type == enumType.healer && !board.CheckEnemyUnit(tilesToCheck[i], GetComponent<Unit>())) || board.CheckEnemyUnit(tilesToCheck[i], GetComponent<Unit>()))
                 {
                     attackingUnit = board.GetUnit(tilesToCheck[i]);
 
-                    status = "READY";
+                    status = enumStatus.READY;
 
                     if (attackingUnit.CheckIfReady() || i < range - 1)
                     {
-                        status = "ATTACKING";
+                        status = enumStatus.ATTACKING;
                     }
 
                     return;
@@ -265,9 +263,9 @@ public class Unit : MonoBehaviour
 
         if (board.GetTileAvailability(tilesToCheck[0]))
         {
-            status = "MOVING";
+            status = enumStatus.MOVING;
 
-            if (team.ToString() == "allied")
+            if (team == enumTeam.allied)
             {
                 MoveUnit(position + Vector2.up);
             }
@@ -278,7 +276,7 @@ public class Unit : MonoBehaviour
         }
         else
         {
-            status = "WAITING";
+            status = enumStatus.WAITING;
         }
     }
 
@@ -302,7 +300,7 @@ public class Unit : MonoBehaviour
     // Check if unit is in position to be attacked
     public bool CheckIfReady()
     {
-        return status == "READY" || status == "ATTACKING";
+        return status == enumStatus.READY || status == enumStatus.ATTACKING;
     }
 
     public void SetUnitPosition(Vector2 newPosition)
@@ -339,7 +337,7 @@ public class Unit : MonoBehaviour
 
     void AttackOpponent()
     {
-        if (team.ToString() == "allied")
+        if (team == enumTeam.allied)
         {
             bot.TakeDamage(1);
         }
