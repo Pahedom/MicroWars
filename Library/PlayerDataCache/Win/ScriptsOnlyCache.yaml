@@ -828,4 +828,5 @@ ScriptsOnlyBuild:
   scenePathNames:
   - Assets/Scenes/Menu.unity
   - Assets/Scenes/Gameplay.unity
-  playerPath: C:/Users/domin/Desktop/Build/Auto Chess 2.exe
+  playerPath: D:/Users/domin/Documentos/Unity_Projects/MicroWars/Build/Auto Chess
+    2.exe
